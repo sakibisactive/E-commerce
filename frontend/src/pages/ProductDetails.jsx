@@ -95,7 +95,7 @@ export const ProductDetails = () => {
     }
 
     try {
-      const res = await axios.post('http://localhost:5000/api/reviews', {
+      const res = await axios.post(`http://${window.location.hostname}:5000/api/reviews`, {
         productId: id,
         rating,
         comment,

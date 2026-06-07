@@ -53,8 +53,8 @@ export const Shop = () => {
   const fetchMetadata = async () => {
     try {
       const [catRes, brandRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/categories'),
-        axios.get('http://localhost:5000/api/brands'),
+        axios.get(`http://${window.location.hostname}:5000/api/categories`),
+        axios.get(`http://${window.location.hostname}:5000/api/brands`),
       ]);
       setCategories(catRes.data);
       setBrands(brandRes.data);
@@ -66,7 +66,7 @@ export const Shop = () => {
   const fetchProducts = async (params) => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/products', {
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/products`, {
         params: Object.fromEntries(params.entries()),
       });
       setProducts(res.data.products);

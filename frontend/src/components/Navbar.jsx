@@ -59,7 +59,7 @@ export const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/notifications');
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/notifications`);
       setNotifications(res.data);
     } catch (e) {
       console.error('Notification Fetch error');
@@ -77,7 +77,7 @@ export const Navbar = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await axios.put('http://localhost:5000/api/notifications/read-all');
+      await axios.put(`http://${window.location.hostname}:5000/api/notifications/read-all`);
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     } catch (e) {
       console.error(e);

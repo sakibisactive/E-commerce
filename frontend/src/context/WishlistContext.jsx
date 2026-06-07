@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { useCart } from './CartContext';
 
 const WishlistContext = createContext();
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `http://${window.location.hostname}:5000/api`;
 
 export const WishlistProvider = ({ children }) => {
   const { user } = useAuth();

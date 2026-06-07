@@ -15,7 +15,7 @@ export const AdminDashboard = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/dashboard/analytics');
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/dashboard/analytics`);
       setData(res.data);
     } catch (e) {
       console.error('Error fetching analytics');

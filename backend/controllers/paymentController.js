@@ -7,7 +7,14 @@ import { validateSSLCommerzPayment } from '../services/sslcommerzService.js';
 import { generateInvoicePDF } from '../services/pdfService.js';
 import { logActivity } from '../middleware/logMiddleware.js';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const getFrontendUrl = (req) => {
+  if (process.env.FRONTEND_URL) {
+    return process.env.FRONTEND_URL;
+  }
+  const host = req.get('host') || 'localhost:5000';
+  const hostname = host.split(':')[0];
+  return `http://${hostname}:5173`;
+};
 
 // @desc    Handle SSLCommerz Success callback
 // @route   POST /api/payments/success
@@ -59,7 +66,7 @@ export const paymentSuccess = async (req, res) => {
     await logActivity(order.user._id, 'Payment Activity', { status: 'Paid', tranId });
 
     // Redirect user to the frontend checkout success page
-    res.redirect(`${FRONTEND_URL}/checkout/success?orderId=${order._id}`);
+    res.redirect(`${getFrontendUrl(req)}/checkout/success?orderId=${order._id}`);
   } catch (error) {
     console.error('Payment Success Handler Error:', error.message);
     res.status(500).send('Server Error handling payment success callback');
@@ -99,7 +106,7 @@ export const paymentFail = async (req, res) => {
 
     await logActivity(order.user, 'Payment Activity', { status: 'Failed', tranId });
 
-    res.redirect(`${FRONTEND_URL}/checkout/fail?orderId=${order._id}`);
+    res.redirect(`${getFrontendUrl(req)}/checkout/fail?orderId=${order._id}`);
   } catch (error) {
     console.error('Payment Fail Handler Error:', error.message);
     res.status(500).send('Server Error handling payment fail callback');
@@ -131,7 +138,7 @@ export const paymentCancel = async (req, res) => {
 
     await logActivity(order.user, 'Payment Activity', { status: 'Cancelled', tranId });
 
-    res.redirect(`${FRONTEND_URL}/checkout/cancel?orderId=${order._id}`);
+    res.redirect(`${getFrontendUrl(req)}/checkout/cancel?orderId=${order._id}`);
   } catch (error) {
     console.error('Payment Cancel Handler Error:', error.message);
     res.status(500).send('Server Error handling payment cancel callback');

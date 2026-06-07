@@ -19,8 +19,8 @@ export const Home = () => {
     try {
       setLoading(true);
       const [bannersRes, productsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/banners'),
-        axios.get('http://localhost:5000/api/products'),
+        axios.get(`http://${window.location.hostname}:5000/api/banners`),
+        axios.get(`http://${window.location.hostname}:5000/api/products`),
       ]);
       setBanners(bannersRes.data);
       setProducts(productsRes.data.products);

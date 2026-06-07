@@ -45,7 +45,7 @@ export const Profile = () => {
   const fetchOrders = async () => {
     try {
       setLoadingOrders(true);
-      const res = await axios.get('http://localhost:5000/api/orders/my');
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/orders/my`);
       setOrders(res.data);
     } catch (e) {
       console.error(e);
@@ -56,7 +56,7 @@ export const Profile = () => {
 
   const fetchAddresses = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/users/addresses');
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/users/addresses`);
       setAddresses(res.data);
     } catch (e) {
       console.error(e);
@@ -91,7 +91,7 @@ export const Profile = () => {
       if (editingAddressId) {
         await axios.put(`http://localhost:5000/api/users/addresses/${editingAddressId}`, payload);
       } else {
-        await axios.post('http://localhost:5000/api/users/addresses', payload);
+        await axios.post(`http://${window.location.hostname}:5000/api/users/addresses`, payload);
       }
       resetAddressForm();
       fetchAddresses();
