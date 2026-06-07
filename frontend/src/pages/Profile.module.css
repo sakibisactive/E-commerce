@@ -1,0 +1,340 @@
+.profilePage {
+  display: flex;
+  gap: 32px;
+  padding-top: 40px;
+  padding-bottom: 80px;
+}
+
+.sidebar {
+  width: 280px;
+  height: fit-content;
+  padding: 24px;
+  position: sticky;
+  top: 90px;
+  flex-shrink: 0;
+}
+
+.profileSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-hover);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-glow);
+}
+
+.avatarPlaceholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  color: white;
+  font-weight: 800;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-glow);
+}
+
+.profileSummary h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.profileSummary p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.tabBtn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+}
+
+.activeTab {
+  color: white !important;
+  background: var(--accent-gradient);
+  box-shadow: var(--shadow-glow);
+}
+
+.mainContent {
+  flex-grow: 1;
+}
+
+.contentCard {
+  padding: 32px;
+}
+
+.contentCard h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroup label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.fullWidth {
+  grid-column: span 2;
+}
+
+.errorAlert {
+  background-color: var(--error-glow);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  color: var(--error);
+  padding: 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.successAlert {
+  background-color: var(--success-glow);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: var(--success);
+  padding: 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.headerRow h2 {
+  margin-bottom: 0;
+}
+
+.addressForm {
+  padding: 24px;
+  margin-bottom: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.checkboxLabel input {
+  accent-color: var(--accent-primary);
+  width: 15px;
+  height: 15px;
+}
+
+.addressList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.addressCard {
+  padding: 20px;
+}
+
+.addrHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.defaultBadge {
+  background-color: var(--success-glow);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: var(--border-radius-full);
+}
+
+.addrCardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cardActionBtn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cardActionBtn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.deleteCardBtn:hover {
+  border-color: rgba(244, 63, 94, 0.3);
+  color: #fb7185 !important;
+  background-color: rgba(244, 63, 94, 0.05) !important;
+}
+
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.orderCard {
+  padding: 24px;
+}
+
+.orderHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.statusBadge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-full);
+}
+
+.statusPaid {
+  background-color: var(--success-glow);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.statusUnpaid {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.orderItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.orderItemRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.orderTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+}
+
+.spinner {
+  color: var(--accent-primary);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 992px) {
+  .profilePage {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+}
+
+@media (max-width: 576px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .fullWidth {
+    grid-column: span 1;
+  }
+}

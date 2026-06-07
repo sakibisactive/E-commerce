@@ -1,0 +1,122 @@
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+}
+
+.slide {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  transition: background-image 0.5s ease-in-out;
+  animation: fadeIn 0.8s ease;
+}
+
+.contentContainer {
+  width: 100%;
+}
+
+.content {
+  max-width: 550px;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.title {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  background: linear-gradient(to right, #ffffff, #f1f5f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.navBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(17, 24, 39, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all var(--transition-fast);
+}
+
+.navBtn:hover {
+  background-color: rgba(99, 102, 241, 0.85);
+  color: white;
+  border-color: transparent;
+  box-shadow: var(--shadow-glow);
+}
+
+.leftBtn {
+  left: 24px;
+}
+
+.rightBtn {
+  right: 24px;
+}
+
+.dotsContainer {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.activeDot {
+  width: 24px;
+  border-radius: 4px;
+  background-color: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+}
+
+@media (max-width: 768px) {
+  .carouselContainer {
+    height: 380px;
+  }
+  
+  .title {
+    font-size: 30px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+  
+  .leftBtn, .rightBtn {
+    display: none;
+  }
+}
