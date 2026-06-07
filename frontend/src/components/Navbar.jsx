@@ -86,7 +86,7 @@ export const Navbar = () => {
 
   const handleNotificationClick = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`);
+      await axios.put(`http://${window.location.hostname}:5000/api/notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
     } catch (e) {
       console.error(e);

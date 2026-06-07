@@ -18,7 +18,7 @@ export const CheckoutSuccess = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/orders/${orderId}`);
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/orders/${orderId}`);
       setOrder(res.data);
     } catch (e) {
       console.error(e);
@@ -29,7 +29,7 @@ export const CheckoutSuccess = () => {
 
   const handleDownloadInvoice = () => {
     const token = localStorage.getItem('token');
-    window.open(`http://localhost:5000/api/orders/${orderId}/invoice?token=${token}`, '_blank');
+    window.open(`http://${window.location.hostname}:5000/api/orders/${orderId}/invoice?token=${token}`, '_blank');
   };
 
   return (

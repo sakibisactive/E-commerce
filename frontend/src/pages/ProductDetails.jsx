@@ -36,8 +36,8 @@ export const ProductDetails = () => {
     try {
       setLoading(true);
       const [prodRes, reviewsRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/products/${id}`),
-        axios.get(`http://localhost:5000/api/reviews/product/${id}`),
+        axios.get(`http://${window.location.hostname}:5000/api/products/${id}`),
+        axios.get(`http://${window.location.hostname}:5000/api/reviews/product/${id}`),
       ]);
       
       setProduct(prodRes.data.product);
@@ -113,7 +113,7 @@ export const ProductDetails = () => {
 
   const handleReportReview = async (reviewId) => {
     try {
-      await axios.put(`http://localhost:5000/api/reviews/${reviewId}/report`);
+      await axios.put(`http://${window.location.hostname}:5000/api/reviews/${reviewId}/report`);
       alert('Review has been reported to administrators.');
     } catch (err) {
       alert('Error reporting review');
@@ -123,7 +123,7 @@ export const ProductDetails = () => {
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm('Delete this review?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/reviews/${reviewId}`);
+      await axios.delete(`http://${window.location.hostname}:5000/api/reviews/${reviewId}`);
       alert('Review deleted.');
       fetchProductDetails();
     } catch (err) {

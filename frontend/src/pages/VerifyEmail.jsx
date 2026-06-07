@@ -23,7 +23,7 @@ export const VerifyEmail = () => {
   const verifyToken = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/auth/verify-email?token=${token}`);
+      const res = await axios.get(`http://${window.location.hostname}:5000/api/auth/verify-email?token=${token}`);
       setSuccess(res.data.message);
     } catch (err) {
       setError(err.response?.data?.message || 'Verification link is invalid or expired.');

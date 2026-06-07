@@ -89,7 +89,7 @@ export const Profile = () => {
 
     try {
       if (editingAddressId) {
-        await axios.put(`http://localhost:5000/api/users/addresses/${editingAddressId}`, payload);
+        await axios.put(`http://${window.location.hostname}:5000/api/users/addresses/${editingAddressId}`, payload);
       } else {
         await axios.post(`http://${window.location.hostname}:5000/api/users/addresses`, payload);
       }
@@ -125,7 +125,7 @@ export const Profile = () => {
   const handleDeleteAddress = async (id) => {
     if (!window.confirm('Delete this address?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/users/addresses/${id}`);
+      await axios.delete(`http://${window.location.hostname}:5000/api/users/addresses/${id}`);
       fetchAddresses();
     } catch (err) {
       alert('Error deleting address');
@@ -134,7 +134,7 @@ export const Profile = () => {
 
   const handleDownloadInvoice = (id) => {
     const token = localStorage.getItem('token');
-    window.open(`http://localhost:5000/api/orders/${id}/invoice?token=${token}`, '_blank');
+    window.open(`http://${window.location.hostname}:5000/api/orders/${id}/invoice?token=${token}`, '_blank');
   };
 
   return (
