@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingBag, Heart, User, Search, LogOut, Menu, X, Bell, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +21,24 @@ export const Navbar = () => {
   // In-app notifications states
   const [notifications, setNotifications] = useState([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  const notificationRef = useRef(null);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const { activeItemsCount } = getCalculatedTotals();
   const wishlistCount = wishlist?.products?.length || 0;
@@ -120,7 +138,7 @@ export const Navbar = () => {
 
           {/* Notifications Panel */}
           {user && (
-            <div className={styles.popoverContainer}>
+            <div className={styles.popoverContainer} ref={notificationRef}>
               <button
                 className={styles.iconButton}
                 onClick={() => {
@@ -170,7 +188,7 @@ export const Navbar = () => {
 
           {/* User Profile Dropdown */}
           {user ? (
-            <div className={styles.popoverContainer}>
+            <div className={styles.popoverContainer} ref={profileRef}>
               <button
                 className={styles.profileBtn}
                 onClick={() => {
