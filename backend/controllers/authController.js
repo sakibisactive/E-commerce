@@ -63,6 +63,12 @@ export const registerUser = async (req, res) => {
     }
 
     if (user) {
+      console.log('==================================================');
+      console.log('🔑 REGISTRATION OTP GENERATED');
+      console.log(`User Email: ${user.email}`);
+      console.log(`6-Digit OTP Code: ${otp}`);
+      console.log('==================================================');
+
       // Send OTP via email to provided email address
       sendOTPEmail(user.email, user.name, otp).catch((err) => {
         console.error('Registration OTP Email Dispatch Error:', err.message);
@@ -70,10 +76,11 @@ export const registerUser = async (req, res) => {
 
       await logActivity(user._id, 'Login', { status: 'Registered, pending OTP verification' });
 
-      // Return response WITHOUT on-screen OTP code
+      // Return response with devOtp for seamless sandbox testing
       res.status(201).json({
         otpRequired: true,
         email: user.email,
+        devOtp: otp,
         message: `Verification OTP has been sent to ${user.email}. Please check your inbox.`,
       });
     } else {

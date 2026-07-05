@@ -23,6 +23,8 @@ export const Register = () => {
   const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [devOtp, setDevOtp] = useState('');
+
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -41,6 +43,9 @@ export const Register = () => {
         setOtpStep(true);
         setRegisteredEmail(res.email);
         setInfoMessage(res.message);
+        if (res.devOtp) {
+          setDevOtp(res.devOtp);
+        }
       }
     } catch (err) {
       setError(err);
@@ -88,6 +93,19 @@ export const Register = () => {
         )}
 
         {infoMessage && <div className={styles.infoAlert}>{infoMessage}</div>}
+
+        {otpStep && devOtp && (
+          <div style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px dashed #6366f1', padding: '10px 14px', borderRadius: '8px', color: '#818cf8', textAlign: 'center', fontSize: '13px', marginBottom: '16px' }}>
+            🔑 <strong>OTP Generated!</strong> (Terminal Code: <strong style={{ color: '#fff', letterSpacing: '2px', fontSize: '15px' }}>{devOtp}</strong>)
+            <button
+              type="button"
+              onClick={() => setOtpCode(devOtp)}
+              style={{ display: 'block', margin: '6px auto 0 auto', background: '#6366f1', border: 'none', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              Auto-Fill OTP Code
+            </button>
+          </div>
+        )}
 
         {!otpStep ? (
           /* Step 1: Registration Form */
