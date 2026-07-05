@@ -16,13 +16,9 @@ const createTransporter = () => {
     };
   }
 
-  const senderEmail = process.env.SMTP_USER && process.env.SMTP_USER.includes('@')
-    ? process.env.SMTP_USER
-    : 'no-reply@apex-ecommerce.com';
-
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-    port: parseInt(process.env.SMTP_PORT || '2525'),
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
     connectionTimeout: 5000,
     greetingTimeout: 5000,
     socketTimeout: 5000,
@@ -36,10 +32,15 @@ const createTransporter = () => {
 export const sendEmail = async ({ to, subject, text, html }) => {
   try {
     const transporter = createTransporter();
-    const senderEmail = process.env.SMTP_USER && process.env.SMTP_USER.includes('@')
-      ? process.env.SMTP_USER
-      : 'no-reply@apex-ecommerce.com';
-    const fromAddress = process.env.SMTP_FROM || `"Apex E-Commerce" <${senderEmail}>`;
+    
+    // Determine clean sender email address (never use internal @smtp-brevo.com ID)
+    let fromAddress = process.env.SMTP_FROM;
+
+    if (!fromAddress || fromAddress.includes('@smtp-brevo.com')) {
+      fromAddress = '"Apex E-Commerce" <shahriarsakib1205@gmail.com>';
+    }
+
+    console.log(`Attempting to send email via Brevo to ${to} from ${fromAddress}...`);
 
     const info = await transporter.sendMail({
       from: fromAddress,
@@ -48,10 +49,11 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       text,
       html,
     });
+
+    console.log(`Email successfully queued by Brevo! MessageID: ${info.messageId}`);
     return info;
   } catch (error) {
     console.error(`Email send failure: ${error.message}`);
-    // Return mock success in sandbox environments to avoid crashing authentication/checkout
     return { messageId: 'error-fallback-id' };
   }
 };
@@ -74,17 +76,17 @@ export const sendVerificationEmail = async (email, name, token) => {
 };
 
 export const sendOTPEmail = async (email, name, otp) => {
-  const text = `Hi ${name}, Your verification OTP code is: ${otp}`;
+  const text = `Hi ${name}, Your registration OTP verification code is: ${otp}`;
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
       <h2 style="color: #4F46E5;">Security Verification Code</h2>
       <p>Hi ${name},</p>
-      <p>Please enter the following verification code to complete your login:</p>
+      <p>Please enter the following 6-digit verification code to complete your account registration:</p>
       <div style="text-align: center; margin: 30px 0;">
         <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #4F46E5; background-color: #F3F4F6; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</span>
       </div>
-      <p>This code is valid for 10 minutes. Do not share this OTP with anyone.</p>
+      <p>This code is valid for 15 minutes. Do not share this OTP with anyone.</p>
     </div>
   `;
-  return sendEmail({ to: email, subject: 'Your Two-Step Login OTP Code', text, html });
+  return sendEmail({ to: email, subject: 'Your Registration OTP Verification Code', text, html });
 };
