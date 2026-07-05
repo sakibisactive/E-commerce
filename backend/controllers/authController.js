@@ -76,11 +76,10 @@ export const registerUser = async (req, res) => {
 
       await logActivity(user._id, 'Login', { status: 'Registered, pending OTP verification' });
 
-      // Return response with devOtp for seamless sandbox testing
+      // Return response without on-screen OTP code
       res.status(201).json({
         otpRequired: true,
         email: user.email,
-        devOtp: otp,
         message: `Verification OTP has been sent to ${user.email}. Please check your inbox.`,
       });
     } else {
