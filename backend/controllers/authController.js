@@ -25,27 +25,42 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    // Check if email or phone already exists
-    const userExists = await User.findOne({ $or: [{ email }, { phone }] });
-    if (userExists) {
-      return res.status(400).json({ message: 'Email or Phone number is already registered' });
-    }
-
     // Generate 6-digit OTP code
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
 
-    // Create unverified user
-    const user = await User.create({
-      name,
-      email,
-      phone,
-      password,
-      role: 'customer',
-      otp,
-      otpExpires,
-      isVerified: false,
-    });
+    // Check if email or phone already exists in DB
+    const userExists = await User.findOne({ $or: [{ email }, { phone }] });
+
+    let user;
+
+    if (userExists) {
+      // If user exists and is ALREADY verified, reject duplicate registration
+      if (userExists.isVerified) {
+        return res.status(400).json({ message: 'Email or Phone number is already registered. Please sign in.' });
+      }
+
+      // If user exists but is NOT verified yet, update details and send a fresh OTP
+      userExists.name = name;
+      userExists.email = email;
+      userExists.phone = phone;
+      userExists.password = password;
+      userExists.otp = otp;
+      userExists.otpExpires = otpExpires;
+      user = await userExists.save();
+    } else {
+      // Create new unverified user record
+      user = await User.create({
+        name,
+        email,
+        phone,
+        password,
+        role: 'customer',
+        otp,
+        otpExpires,
+        isVerified: false,
+      });
+    }
 
     if (user) {
       // Send OTP via email to provided email address
@@ -142,10 +157,27 @@ export const loginUser = async (req, res) => {
     });
 
     if (user && (await user.matchPassword(password))) {
-      // Create session audit log
+      // If account is not verified yet, resend OTP email and prompt verification
+      if (!user.isVerified) {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpires = new Date(Date.now() + 15 * 60 * 1000);
+        await user.save();
+
+        sendOTPEmail(user.email, user.name, otp).catch((err) => {
+          console.error('Unverified Login OTP Dispatch Error:', err.message);
+        });
+
+        return res.status(200).json({
+          otpRequired: true,
+          email: user.email,
+          message: `Your account is not verified yet. A fresh OTP code has been sent to ${user.email}.`,
+        });
+      }
+
+      // Direct login for verified returning users
       await logActivity(user._id, 'Login', { status: 'Direct login successful' });
 
-      // Direct login for returning users
       res.status(200).json({
         _id: user._id,
         name: user.name,
