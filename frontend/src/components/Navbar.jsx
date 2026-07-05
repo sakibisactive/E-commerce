@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingBag, Heart, User, Search, LogOut, Menu, X, Bell, Shield } from 'lucide-react';
@@ -59,7 +60,7 @@ export const Navbar = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/notifications`);
+      const res = await axios.get(`${API_BASE_URL}/notifications`);
       setNotifications(res.data);
     } catch (e) {
       console.error('Notification Fetch error');
@@ -77,7 +78,7 @@ export const Navbar = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/notifications/read-all`);
+      await axios.put(`${API_BASE_URL}/notifications/read-all`);
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     } catch (e) {
       console.error(e);
@@ -86,7 +87,7 @@ export const Navbar = () => {
 
   const handleNotificationClick = async (id) => {
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/notifications/${id}/read`);
+      await axios.put(`${API_BASE_URL}/notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
     } catch (e) {
       console.error(e);

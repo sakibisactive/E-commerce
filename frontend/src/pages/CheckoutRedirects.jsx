@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -18,7 +19,7 @@ export const CheckoutSuccess = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/orders/${orderId}`);
+      const res = await axios.get(`${API_BASE_URL}/orders/${orderId}`);
       setOrder(res.data);
     } catch (e) {
       console.error(e);
@@ -29,7 +30,7 @@ export const CheckoutSuccess = () => {
 
   const handleDownloadInvoice = () => {
     const token = localStorage.getItem('token');
-    window.open(`http://${window.location.hostname}:5000/api/orders/${orderId}/invoice?token=${token}`, '_blank');
+    window.open(`${API_BASE_URL}/orders/${orderId}/invoice?token=${token}`, '_blank');
   };
 
   return (

@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -53,8 +54,8 @@ export const Shop = () => {
   const fetchMetadata = async () => {
     try {
       const [catRes, brandRes] = await Promise.all([
-        axios.get(`http://${window.location.hostname}:5000/api/categories`),
-        axios.get(`http://${window.location.hostname}:5000/api/brands`),
+        axios.get(`${API_BASE_URL}/categories`),
+        axios.get(`${API_BASE_URL}/brands`),
       ]);
       setCategories(catRes.data);
       setBrands(brandRes.data);
@@ -66,7 +67,7 @@ export const Shop = () => {
   const fetchProducts = async (params) => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/products`, {
+      const res = await axios.get(`${API_BASE_URL}/products`, {
         params: Object.fromEntries(params.entries()),
       });
       setProducts(res.data.products);

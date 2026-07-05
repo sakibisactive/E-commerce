@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -36,8 +37,8 @@ export const ProductDetails = () => {
     try {
       setLoading(true);
       const [prodRes, reviewsRes] = await Promise.all([
-        axios.get(`http://${window.location.hostname}:5000/api/products/${id}`),
-        axios.get(`http://${window.location.hostname}:5000/api/reviews/product/${id}`),
+        axios.get(`${API_BASE_URL}/products/${id}`),
+        axios.get(`${API_BASE_URL}/reviews/product/${id}`),
       ]);
       
       setProduct(prodRes.data.product);
@@ -95,7 +96,7 @@ export const ProductDetails = () => {
     }
 
     try {
-      const res = await axios.post(`http://${window.location.hostname}:5000/api/reviews`, {
+      const res = await axios.post(`${API_BASE_URL}/reviews`, {
         productId: id,
         rating,
         comment,
@@ -113,7 +114,7 @@ export const ProductDetails = () => {
 
   const handleReportReview = async (reviewId) => {
     try {
-      await axios.put(`http://${window.location.hostname}:5000/api/reviews/${reviewId}/report`);
+      await axios.put(`${API_BASE_URL}/reviews/${reviewId}/report`);
       alert('Review has been reported to administrators.');
     } catch (err) {
       alert('Error reporting review');
@@ -123,7 +124,7 @@ export const ProductDetails = () => {
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm('Delete this review?')) return;
     try {
-      await axios.delete(`http://${window.location.hostname}:5000/api/reviews/${reviewId}`);
+      await axios.delete(`${API_BASE_URL}/reviews/${reviewId}`);
       alert('Review deleted.');
       fetchProductDetails();
     } catch (err) {

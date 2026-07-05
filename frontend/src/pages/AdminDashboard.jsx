@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { SidebarAdmin } from '../components/SidebarAdmin';
@@ -15,7 +16,7 @@ export const AdminDashboard = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/dashboard/analytics`);
+      const res = await axios.get(`${API_BASE_URL}/dashboard/analytics`);
       setData(res.data);
     } catch (e) {
       console.error('Error fetching analytics');

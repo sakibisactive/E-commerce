@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -23,7 +24,7 @@ export const VerifyEmail = () => {
   const verifyToken = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/auth/verify-email?token=${token}`);
+      const res = await axios.get(`${API_BASE_URL}/auth/verify-email?token=${token}`);
       setSuccess(res.data.message);
     } catch (err) {
       setError(err.response?.data?.message || 'Verification link is invalid or expired.');

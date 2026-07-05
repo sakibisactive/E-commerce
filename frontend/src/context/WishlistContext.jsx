@@ -1,10 +1,11 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import { useCart } from './CartContext';
 
 const WishlistContext = createContext();
-const API_URL = `http://${window.location.hostname}:5000/api`;
+const API_URL = API_BASE_URL;
 
 export const WishlistProvider = ({ children }) => {
   const { user } = useAuth();

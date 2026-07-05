@@ -1,9 +1,10 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
-const API_URL = `http://${window.location.hostname}:5000/api`;
+const API_URL = API_BASE_URL;
 
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();

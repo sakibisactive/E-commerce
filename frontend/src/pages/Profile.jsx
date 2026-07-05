@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -45,7 +46,7 @@ export const Profile = () => {
   const fetchOrders = async () => {
     try {
       setLoadingOrders(true);
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/orders/my`);
+      const res = await axios.get(`${API_BASE_URL}/orders/my`);
       setOrders(res.data);
     } catch (e) {
       console.error(e);
@@ -56,7 +57,7 @@ export const Profile = () => {
 
   const fetchAddresses = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/users/addresses`);
+      const res = await axios.get(`${API_BASE_URL}/users/addresses`);
       setAddresses(res.data);
     } catch (e) {
       console.error(e);
@@ -89,9 +90,9 @@ export const Profile = () => {
 
     try {
       if (editingAddressId) {
-        await axios.put(`http://${window.location.hostname}:5000/api/users/addresses/${editingAddressId}`, payload);
+        await axios.put(`${API_BASE_URL}/users/addresses/${editingAddressId}`, payload);
       } else {
-        await axios.post(`http://${window.location.hostname}:5000/api/users/addresses`, payload);
+        await axios.post(`${API_BASE_URL}/users/addresses`, payload);
       }
       resetAddressForm();
       fetchAddresses();
@@ -125,7 +126,7 @@ export const Profile = () => {
   const handleDeleteAddress = async (id) => {
     if (!window.confirm('Delete this address?')) return;
     try {
-      await axios.delete(`http://${window.location.hostname}:5000/api/users/addresses/${id}`);
+      await axios.delete(`${API_BASE_URL}/users/addresses/${id}`);
       fetchAddresses();
     } catch (err) {
       alert('Error deleting address');
@@ -134,7 +135,7 @@ export const Profile = () => {
 
   const handleDownloadInvoice = (id) => {
     const token = localStorage.getItem('token');
-    window.open(`http://${window.location.hostname}:5000/api/orders/${id}/invoice?token=${token}`, '_blank');
+    window.open(`${API_BASE_URL}/orders/${id}/invoice?token=${token}`, '_blank');
   };
 
   return (

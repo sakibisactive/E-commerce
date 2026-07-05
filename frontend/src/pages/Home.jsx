@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BannerCarousel } from '../components/BannerCarousel';
@@ -19,8 +20,8 @@ export const Home = () => {
     try {
       setLoading(true);
       const [bannersRes, productsRes] = await Promise.all([
-        axios.get(`http://${window.location.hostname}:5000/api/banners`),
-        axios.get(`http://${window.location.hostname}:5000/api/products`),
+        axios.get(`${API_BASE_URL}/banners`),
+        axios.get(`${API_BASE_URL}/products`),
       ]);
       setBanners(bannersRes.data);
       setProducts(productsRes.data.products);

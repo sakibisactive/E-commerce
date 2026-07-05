@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -49,7 +50,7 @@ export const Checkout = () => {
 
   const fetchSavedAddresses = async () => {
     try {
-      const res = await axios.get(`http://${window.location.hostname}:5000/api/users/addresses`);
+      const res = await axios.get(`${API_BASE_URL}/users/addresses`);
       setAddresses(res.data);
       
       // Auto-fill form with default address if available
@@ -101,7 +102,7 @@ export const Checkout = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post(`http://${window.location.hostname}:5000/api/orders`, {
+      const res = await axios.post(`${API_BASE_URL}/orders`, {
         couponCode: coupon?.code || '',
         shippingAddress: shipAddrObj,
         billingAddress: billAddrObj,
