@@ -37,7 +37,7 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     let fromAddress = process.env.SMTP_FROM;
 
     if (!fromAddress || fromAddress.includes('@smtp-brevo.com')) {
-      fromAddress = '"Apex E-Commerce" <shahriarsakib1205@gmail.com>';
+      fromAddress = '"Apex E-Commerce" <shahriar.sakib@g.bracu.ac.bd>';
     }
 
     console.log(`Attempting to send email via Brevo to ${to} from ${fromAddress}...`);
