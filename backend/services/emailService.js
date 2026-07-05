@@ -16,12 +16,16 @@ const createTransporter = () => {
     };
   }
 
+  const port = parseInt(process.env.SMTP_PORT || '465');
+  const isSecure = port === 465;
+
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 5000,
+    port,
+    secure: isSecure,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
