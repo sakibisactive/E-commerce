@@ -16,9 +16,16 @@ const createTransporter = () => {
     };
   }
 
+  const senderEmail = process.env.SMTP_USER && process.env.SMTP_USER.includes('@')
+    ? process.env.SMTP_USER
+    : 'no-reply@apex-ecommerce.com';
+
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
     port: parseInt(process.env.SMTP_PORT || '2525'),
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -29,8 +36,13 @@ const createTransporter = () => {
 export const sendEmail = async ({ to, subject, text, html }) => {
   try {
     const transporter = createTransporter();
+    const senderEmail = process.env.SMTP_USER && process.env.SMTP_USER.includes('@')
+      ? process.env.SMTP_USER
+      : 'no-reply@apex-ecommerce.com';
+    const fromAddress = process.env.SMTP_FROM || `"Apex E-Commerce" <${senderEmail}>`;
+
     const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Apex E-Commerce" <no-reply@apex-ecommerce.com>',
+      from: fromAddress,
       to,
       subject,
       text,

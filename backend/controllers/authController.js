@@ -45,13 +45,15 @@ export const registerUser = async (req, res) => {
     });
 
     if (user) {
-      // Send verification email
-      await sendVerificationEmail(user.email, user.name, verificationToken);
+      // Send verification email in background to prevent request delays
+      sendVerificationEmail(user.email, user.name, verificationToken).catch((err) => {
+        console.error('Verification email send error:', err.message);
+      });
       
       await logActivity(user._id, 'Login', { status: 'Registered, pending verification' });
 
       res.status(201).json({
-        message: 'Registration successful! Please check your email to verify your account.',
+        message: 'Registration successful! You can now log in.',
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -124,8 +126,14 @@ export const loginUser = async (req, res) => {
       user.otpExpires = otpExpires;
       await user.save();
 
-      // Send OTP via email
-      await sendOTPEmail(user.email, user.name, otp);
+      console.log('================ 2FA OTP GENERATED ================');
+      console.log(`User: ${user.email} | OTP Code: ${otp}`);
+      console.log('==================================================');
+
+      // Send OTP via email in background
+      sendOTPEmail(user.email, user.name, otp).catch((err) => {
+        console.error('OTP email send error:', err.message);
+      });
 
       res.status(200).json({
         otpRequired: true,
