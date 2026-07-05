@@ -10,7 +10,7 @@ import Banner from './models/Banner.js';
 
 dotenv.config();
 
-const TARGET_URI = process.env.MONGO_URI || 'mongodb+srv://shahriarsakib1205_db_user:DcEMyssW3VRI1ZVI@cluster0.xyxtvl5.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0';
+const TARGET_URI = 'mongodb+srv://shahriarsakib1205_db_user:DcEMyssW3VRI1ZVI@cluster0.xyxtvl5.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=Cluster0';
 
 const seed500 = async () => {
   try {
