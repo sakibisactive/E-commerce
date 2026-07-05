@@ -1,16 +1,16 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { sendVerificationEmail, sendOTPEmail } from '../services/emailService.js';
+import { sendOTPEmail } from '../services/emailService.js';
 import { logActivity } from '../middleware/logMiddleware.js';
 
 // Helper to generate JWT
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET || 'default_secret_for_local_development_123456', {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET || 'apex_ecommerce_jwt_secret_key_2026', {
     expiresIn: '30d',
   });
 };
 
-// @desc    Register a new user
+// @desc    Register a new user & send OTP to provided email
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
@@ -18,45 +18,51 @@ export const registerUser = async (req, res) => {
 
   try {
     if (!name || !email || !phone || !password || !confirmPassword) {
-      return res.status(400).json({ message: 'Please provide all fields' });
+      return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    // Check if user exists
-    const userExists = await User.findOne({ email });
+    // Check if email or phone already exists
+    const userExists = await User.findOne({ $or: [{ email }, { phone }] });
     if (userExists) {
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ message: 'Email or Phone number is already registered' });
     }
 
-    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET || 'default_secret_for_local_development_123456', { expiresIn: '1d' });
+    // Generate 6-digit OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
 
-    // Create user
+    // Create unverified user
     const user = await User.create({
       name,
       email,
       phone,
       password,
       role: 'customer',
-      verificationToken,
+      otp,
+      otpExpires,
       isVerified: false,
     });
 
     if (user) {
-      // Send verification email in background to prevent request delays
-      sendVerificationEmail(user.email, user.name, verificationToken).catch((err) => {
-        console.error('Verification email send error:', err.message);
+      // Send OTP via email to provided email address
+      sendOTPEmail(user.email, user.name, otp).catch((err) => {
+        console.error('Registration OTP Email Dispatch Error:', err.message);
       });
-      
-      await logActivity(user._id, 'Login', { status: 'Registered, pending verification' });
 
+      await logActivity(user._id, 'Login', { status: 'Registered, pending OTP verification' });
+
+      // Return response WITHOUT on-screen OTP code
       res.status(201).json({
-        message: 'Registration successful! You can now log in.',
+        otpRequired: true,
+        email: user.email,
+        message: `Verification OTP has been sent to ${user.email}. Please check your inbox.`,
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ message: 'Invalid registration user data' });
     }
   } catch (error) {
     console.error('Registration Error:', error.message);
@@ -64,93 +70,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Verify user email
-// @route   GET /api/auth/verify-email
-// @access  Public
-export const verifyEmail = async (req, res) => {
-  const { token } = req.query;
-
-  try {
-    if (!token) {
-      return res.status(400).json({ message: 'Verification token is required' });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret_for_local_development_123456');
-    } catch (err) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' });
-    }
-
-    const user = await User.findOne({ email: decoded.email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ message: 'Email already verified' });
-    }
-
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
-
-    await logActivity(user._id, 'Login', { status: 'Verified email successfully' });
-
-    res.status(200).json({ message: 'Email verified successfully! You can now log in.' });
-  } catch (error) {
-    console.error('Email Verification Error:', error.message);
-    res.status(500).json({ message: 'Server error during email verification' });
-  }
-};
-
-// @desc    Log in user & send OTP
-// @route   POST /api/auth/login
-// @access  Public
-export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Please enter all fields' });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (user && (await user.matchPassword(password))) {
-      // 2FA - Generate OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-      user.otp = otp;
-      user.otpExpires = otpExpires;
-      await user.save();
-
-      console.log('================ 2FA OTP GENERATED ================');
-      console.log(`User: ${user.email} | OTP Code: ${otp}`);
-      console.log('==================================================');
-
-      // Send OTP via email in background
-      sendOTPEmail(user.email, user.name, otp).catch((err) => {
-        console.error('OTP email send error:', err.message);
-      });
-
-      res.status(200).json({
-        otpRequired: true,
-        email: user.email,
-        otp,
-        message: `A 2FA verification OTP code has been sent to ${user.email}.`,
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid email or password' });
-    }
-  } catch (error) {
-    console.error('Login Error:', error.message);
-    res.status(500).json({ message: 'Server error during login' });
-  }
-};
-
-// @desc    Verify OTP & issue token
+// @desc    Verify OTP for registration, set isVerified=true, and issue login token
 // @route   POST /api/auth/verify-otp
 // @access  Public
 export const verifyOTP = async (req, res) => {
@@ -158,33 +78,29 @@ export const verifyOTP = async (req, res) => {
 
   try {
     if (!email || !otp) {
-      return res.status(400).json({ message: 'Email and OTP are required' });
+      return res.status(400).json({ message: 'Email and OTP code are required' });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User account not found' });
     }
 
-    // Verify OTP
+    // Validate OTP code and expiration
     if (!user.otp || user.otp !== otp || new Date() > user.otpExpires) {
       return res.status(400).json({ message: 'Invalid or expired OTP code' });
     }
 
-    // Clear OTP details
+    // Mark verified and clear OTP fields
+    user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
-    
-    // Auto-verify if they haven't verified their email but got OTP
-    if (!user.isVerified) {
-      user.isVerified = true;
-    }
-    
     await user.save();
 
-    // Create session audit log
-    await logActivity(user._id, 'Login', { status: 'Authenticated successfully' });
+    // Audit log
+    await logActivity(user._id, 'Login', { status: 'Verified OTP & logged in successfully' });
 
+    // Respond with user data and auth token for instant login
     res.status(200).json({
       _id: user._id,
       name: user.name,
@@ -200,12 +116,55 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
+// @desc    Direct Login with Email or Phone + Password for verified users
+// @route   POST /api/auth/login
+// @access  Public
+export const loginUser = async (req, res) => {
+  const { emailOrPhone, email, phone, password } = req.body;
+
+  try {
+    const identifier = emailOrPhone || email || phone;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'Please enter your phone number / email and password' });
+    }
+
+    // Find user by email OR phone
+    const user = await User.findOne({
+      $or: [{ email: identifier.trim() }, { phone: identifier.trim() }],
+    });
+
+    if (user && (await user.matchPassword(password))) {
+      // Create session audit log
+      await logActivity(user._id, 'Login', { status: 'Direct login successful' });
+
+      // Direct login for returning users
+      res.status(200).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profilePhoto: user.profilePhoto,
+        token: generateToken(user._id, user.role),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid credentials. Please check your phone number / email and password.' });
+    }
+  } catch (error) {
+    console.error('Login Error:', error.message);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+};
+
 // @desc    Logout user
 // @route   POST /api/auth/logout
 // @access  Private
 export const logoutUser = async (req, res) => {
   try {
-    await logActivity(req.user._id, 'Logout', { status: 'Logged out successfully' });
+    if (req.user?._id) {
+      await logActivity(req.user._id, 'Logout', { status: 'Logged out successfully' });
+    }
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error during logout' });

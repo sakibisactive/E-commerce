@@ -9,10 +9,8 @@ const API_URL = API_BASE_URL;
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [otpPending, setOtpPending] = useState(false);
-  const [otpEmail, setOtpEmail] = useState('');
 
-  // Configure Axios defaults
+  // Configure Axios defaults on initial load
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -36,39 +34,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  // Direct login with Phone/Email + Password
+  const login = async (identifier, password) => {
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-      
-      // If OTP is required, set intermediate state
-      if (res.data.otpRequired) {
-        setOtpPending(true);
-        setOtpEmail(res.data.email);
-        return { otpRequired: true, email: res.data.email, otp: res.data.otp, message: res.data.message };
-      }
-      return { success: false, message: 'Unexpected response format' };
-    } catch (error) {
-      throw error.response?.data?.message || 'Login failed';
-    }
-  };
+      const res = await axios.post(`${API_URL}/auth/login`, {
+        emailOrPhone: identifier,
+        password,
+      });
 
-  const verifyOTP = async (email, otp) => {
-    try {
-      const res = await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
       const { token, ...userData } = res.data;
-      
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
       setUser(userData);
-      setOtpPending(false);
-      setOtpEmail('');
       return userData;
     } catch (error) {
-      throw error.response?.data?.message || 'OTP verification failed';
+      throw error.response?.data?.message || 'Login failed. Please check your credentials.';
     }
   };
 
+  // Register user and trigger email OTP dispatch
   const register = async (name, email, phone, password, confirmPassword) => {
     try {
       const res = await axios.post(`${API_URL}/auth/register`, {
@@ -78,9 +62,25 @@ export const AuthProvider = ({ children }) => {
         password,
         confirmPassword,
       });
-      return res.data.message;
+      return res.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Registration failed';
+      throw error.response?.data?.message || 'Registration failed.';
+    }
+  };
+
+  // Verify registration OTP and auto-login
+  const verifyOTP = async (email, otp) => {
+    try {
+      const res = await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
+      const { token, ...userData } = res.data;
+
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      throw error.response?.data?.message || 'OTP verification failed. Please check your code.';
     }
   };
 
@@ -90,13 +90,11 @@ export const AuthProvider = ({ children }) => {
         await axios.post(`${API_URL}/auth/logout`);
       }
     } catch (e) {
-      // ignore logout audit errors
+      // ignore audit log error on logout
     } finally {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
       setUser(null);
-      setOtpPending(false);
-      setOtpEmail('');
       setLoading(false);
     }
   };
@@ -104,10 +102,10 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     try {
       const res = await axios.put(`${API_URL}/users/profile`, profileData);
-      setUser(prev => ({ ...prev, ...res.data }));
+      setUser((prev) => ({ ...prev, ...res.data }));
       return res.data;
     } catch (error) {
-      throw error.response?.data?.message || 'Profile update failed';
+      throw error.response?.data?.message || 'Profile update failed.';
     }
   };
 
@@ -116,15 +114,12 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         loading,
-        otpPending,
-        otpEmail,
         login,
         verifyOTP,
         register,
         logout,
         updateProfile,
         fetchUserProfile,
-        setOtpPending,
       }}
     >
       {children}

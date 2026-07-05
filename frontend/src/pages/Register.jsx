@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Phone, Lock, ShieldAlert, BadgeCheck } from 'lucide-react';
+import { User, Mail, Phone, Lock, ShieldAlert, BadgeCheck, ShieldCheck } from 'lucide-react';
 import styles from './Register.module.css';
 
 export const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, verifyOTP } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -14,14 +14,19 @@ export const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // OTP State
+  const [otpStep, setOtpStep] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
+    setInfoMessage('');
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -31,14 +36,27 @@ export const Register = () => {
     setLoading(true);
 
     try {
-      const msg = await register(name, email, phone, password, confirmPassword);
-      setSuccess(msg);
-      // Clear fields
-      setName('');
-      setEmail('');
-      setPhone('');
-      setPassword('');
-      setConfirmPassword('');
+      const res = await register(name, email, phone, password, confirmPassword);
+      if (res.otpRequired) {
+        setOtpStep(true);
+        setRegisteredEmail(res.email);
+        setInfoMessage(res.message);
+      }
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await verifyOTP(registeredEmail, otpCode);
+      navigate('/');
     } catch (err) {
       setError(err);
     } finally {
@@ -50,9 +68,17 @@ export const Register = () => {
     <div className={styles.registerPage}>
       <div className={`${styles.authCard} glass-panel`}>
         <div className={styles.header}>
-          <BadgeCheck size={40} className={styles.iconLogo} />
-          <h2>Create Account</h2>
-          <p className={styles.subtext}>Join us to browse, wishlist, and buy items</p>
+          {!otpStep ? (
+            <BadgeCheck size={40} className={styles.iconLogo} />
+          ) : (
+            <ShieldCheck size={40} className={styles.iconLogo} />
+          )}
+          <h2>{!otpStep ? 'Create Account' : 'Verify Email OTP'}</h2>
+          <p className={styles.subtext}>
+            {!otpStep
+              ? 'Join us to browse, wishlist, and buy items'
+              : `We sent a 6-digit OTP code to your email (${registeredEmail}).`}
+          </p>
         </div>
 
         {error && (
@@ -61,16 +87,11 @@ export const Register = () => {
           </div>
         )}
 
-        {success ? (
-          <div className={styles.successContainer}>
-            <div className={styles.successAlert}>{success}</div>
-            <Link to="/login" className="glow-btn" style={{ padding: '12px 24px', width: '100%', display: 'inline-block', textAlign: 'center' }}>
-              Proceed to Sign In
-            </Link>
-          </div>
-        ) : (
+        {infoMessage && <div className={styles.infoAlert}>{infoMessage}</div>}
+
+        {!otpStep ? (
+          /* Step 1: Registration Form */
           <form onSubmit={handleRegisterSubmit} className={styles.form}>
-            
             <div className={styles.formGroup}>
               <label>Full Name</label>
               <div className={styles.inputWrapper}>
@@ -152,12 +173,41 @@ export const Register = () => {
             </div>
 
             <button type="submit" disabled={loading} className="glow-btn" style={{ width: '100%', padding: '12px', marginTop: '10px' }}>
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? 'Sending OTP...' : 'Register & Get OTP'}
             </button>
 
             <div className={styles.footerLink}>
               Already have an account? <Link to="/login">Sign In here</Link>
             </div>
+          </form>
+        ) : (
+          /* Step 2: OTP Verification Form */
+          <form onSubmit={handleOTPSubmit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label>Enter 6-Digit OTP Code</label>
+              <input
+                type="text"
+                required
+                maxLength={6}
+                placeholder="000000"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                className="form-input"
+                style={{ textAlign: 'center', fontSize: '20px', letterSpacing: '8px', fontWeight: 'bold' }}
+              />
+            </div>
+
+            <button type="submit" disabled={loading} className="glow-btn" style={{ width: '100%', padding: '12px', marginTop: '10px' }}>
+              {loading ? 'Verifying...' : 'Verify OTP & Log In'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOtpStep(false)}
+              style={{ display: 'block', margin: '12px auto 0 auto', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '13px' }}
+            >
+              ← Change Registration Info
+            </button>
           </form>
         )}
       </div>
