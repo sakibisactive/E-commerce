@@ -138,7 +138,8 @@ export const loginUser = async (req, res) => {
       res.status(200).json({
         otpRequired: true,
         email: user.email,
-        message: 'A 2FA verification OTP code has been sent to your email.',
+        otp,
+        message: `A 2FA verification OTP code has been sent to ${user.email}.`,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });

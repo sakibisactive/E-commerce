@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       if (res.data.otpRequired) {
         setOtpPending(true);
         setOtpEmail(res.data.email);
-        return { otpRequired: true, message: res.data.message };
+        return { otpRequired: true, email: res.data.email, otp: res.data.otp, message: res.data.message };
       }
       return { success: false, message: 'Unexpected response format' };
     } catch (error) {

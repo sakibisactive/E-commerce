@@ -17,6 +17,8 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState('');
 
+  const [demoOtp, setDemoOtp] = useState('');
+
   const searchParams = new URLSearchParams(location.search);
   const redirect = searchParams.get('redirect') || '/';
 
@@ -30,6 +32,9 @@ export const Login = () => {
       const res = await login(email, password);
       if (res.otpRequired) {
         setInfoMessage(res.message);
+        if (res.otp) {
+          setDemoOtp(res.otp);
+        }
       }
     } catch (err) {
       setError(err);
@@ -73,6 +78,19 @@ export const Login = () => {
         )}
 
         {infoMessage && <div className={styles.infoAlert}>{infoMessage}</div>}
+
+        {otpPending && demoOtp && (
+          <div style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px dashed #6366f1', padding: '10px 14px', borderRadius: '8px', color: '#818cf8', textAlign: 'center', fontSize: '13px', marginBottom: '16px' }}>
+            🔑 <strong>2FA Code Sent!</strong> (Dev OTP: <strong style={{ color: '#fff', letterSpacing: '2px', fontSize: '15px' }}>{demoOtp}</strong>)
+            <button
+              type="button"
+              onClick={() => setOtp(demoOtp)}
+              style={{ display: 'block', margin: '6px auto 0 auto', background: '#6366f1', border: 'none', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              Auto-Fill Code
+            </button>
+          </div>
+        )}
 
         {!otpPending ? (
           /* Password credentials login form */
