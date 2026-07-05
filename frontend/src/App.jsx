@@ -72,7 +72,7 @@ function AppContent() {
           <Route path="/checkout/cancel" element={<ProtectedRoute><CheckoutCancel /></ProtectedRoute>} />
 
           {/* Admin Protected Views */}
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/*" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
