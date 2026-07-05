@@ -116,6 +116,13 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
+// @desc    Verify user email (legacy/link endpoint)
+// @route   GET /api/auth/verify-email
+// @access  Public
+export const verifyEmail = async (req, res) => {
+  res.status(200).json({ message: 'Account is verified. Please log in.' });
+};
+
 // @desc    Direct Login with Email or Phone + Password for verified users
 // @route   POST /api/auth/login
 // @access  Public
