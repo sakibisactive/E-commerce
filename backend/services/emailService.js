@@ -1,19 +1,33 @@
 import nodemailer from 'nodemailer';
+import axios from 'axios';
+
+const sendViaBrevoApi = async (apiKey, { to, subject, text, html, senderName, senderEmail }) => {
+  const payload = {
+    sender: {
+      name: senderName || 'Apex E-Commerce',
+      email: senderEmail || 'shahriar.sakib@g.bracu.ac.bd',
+    },
+    to: [{ email: to }],
+    subject,
+    htmlContent: html || `<p>${text}</p>`,
+    textContent: text,
+  };
+
+  const response = await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+    },
+    timeout: 10000,
+  });
+
+  return { messageId: response.data.messageId || 'brevo-api-success' };
+};
 
 const createTransporter = () => {
-  // If credentials are empty, return a mock transporter
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.log("SMTP User or Pass missing. Email Service running in Mock mode.");
-    return {
-      sendMail: async (options) => {
-        console.log("================ MOCK EMAIL SENT ================");
-        console.log(`To: ${options.to}`);
-        console.log(`Subject: ${options.subject}`);
-        console.log(`Body Snippet: ${options.text || 'HTML Content'}`);
-        console.log("=================================================");
-        return { messageId: 'mock-id-' + Date.now() };
-      }
-    };
+    return null;
   }
 
   const port = parseInt(process.env.SMTP_PORT || '465');
@@ -34,17 +48,51 @@ const createTransporter = () => {
 };
 
 export const sendEmail = async ({ to, subject, text, html }) => {
+  // Extract verified sender email
+  let senderEmail = 'shahriar.sakib@g.bracu.ac.bd';
+  let senderName = 'Apex E-Commerce';
+
+  if (process.env.SMTP_FROM && !process.env.SMTP_FROM.includes('@smtp-brevo.com')) {
+    const match = process.env.SMTP_FROM.match(/^(?:"?([^"<]+)"?\s*)?<?([^>]+)>?$/);
+    if (match) {
+      if (match[1]) senderName = match[1].trim();
+      if (match[2]) senderEmail = match[2].trim();
+    }
+  }
+
+  // 1. Try Brevo HTTPS REST API first (Immune to ISP port blocking)
+  const brevoApiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS;
+  if (brevoApiKey && (brevoApiKey.startsWith('xkeysib-') || brevoApiKey.startsWith('xsmtpsib-'))) {
+    try {
+      console.log(`[EMAIL DISPATCH] Sending via Brevo HTTPS REST API to ${to}...`);
+      const apiInfo = await sendViaBrevoApi(brevoApiKey, {
+        to,
+        subject,
+        text,
+        html,
+        senderName,
+        senderEmail,
+      });
+      console.log(`[EMAIL DISPATCH] Brevo API Email Sent! MessageID: ${apiInfo.messageId}`);
+      return apiInfo;
+    } catch (apiError) {
+      const errMsg = apiError.response?.data?.message || apiError.message;
+      console.warn(`[EMAIL DISPATCH] Brevo REST API notice: ${errMsg}. Trying SMTP fallback...`);
+    }
+  }
+
+  // 2. Fallback to Nodemailer SMTP
   try {
     const transporter = createTransporter();
-    
-    // Determine clean sender email address (never use internal @smtp-brevo.com ID)
-    let fromAddress = process.env.SMTP_FROM;
-
-    if (!fromAddress || fromAddress.includes('@smtp-brevo.com')) {
-      fromAddress = '"Apex E-Commerce" <shahriar.sakib@g.bracu.ac.bd>';
+    if (!transporter) {
+      console.log("================ MOCK EMAIL SENT ================");
+      console.log(`To: ${to} | Subject: ${subject}`);
+      console.log("=================================================");
+      return { messageId: 'mock-id-' + Date.now() };
     }
 
-    console.log(`Attempting to send email via Brevo to ${to} from ${fromAddress}...`);
+    const fromAddress = `"${senderName}" <${senderEmail}>`;
+    console.log(`[EMAIL DISPATCH] Sending via SMTP to ${to} from ${fromAddress}...`);
 
     const info = await transporter.sendMail({
       from: fromAddress,
@@ -54,10 +102,10 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       html,
     });
 
-    console.log(`Email successfully queued by Brevo! MessageID: ${info.messageId}`);
+    console.log(`[EMAIL DISPATCH] SMTP Email Queued! MessageID: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error(`Email send failure: ${error.message}`);
+    console.error(`[EMAIL DISPATCH ERROR] ${error.message}`);
     return { messageId: 'error-fallback-id' };
   }
 };
