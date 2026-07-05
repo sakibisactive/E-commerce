@@ -17,6 +17,7 @@ export const Register = () => {
   // OTP State
   const [otpStep, setOtpStep] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [signupToken, setSignupToken] = useState('');
   const [otpCode, setOtpCode] = useState('');
 
   const [error, setError] = useState('');
@@ -40,6 +41,7 @@ export const Register = () => {
       if (res.otpRequired) {
         setOtpStep(true);
         setRegisteredEmail(res.email);
+        setSignupToken(res.signupToken);
         setInfoMessage(res.message);
       }
     } catch (err) {
@@ -55,7 +57,7 @@ export const Register = () => {
     setLoading(true);
 
     try {
-      await verifyOTP(registeredEmail, otpCode);
+      await verifyOTP(registeredEmail, otpCode, signupToken);
       navigate('/');
     } catch (err) {
       setError(err);

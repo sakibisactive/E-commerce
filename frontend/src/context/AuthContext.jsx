@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register user and trigger email OTP dispatch
+  // Register user (dispatches email OTP; does not create user in DB yet)
   const register = async (name, email, phone, password, confirmPassword) => {
     try {
       const res = await axios.post(`${API_URL}/auth/register`, {
@@ -68,10 +68,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Verify registration OTP and auto-login
-  const verifyOTP = async (email, otp) => {
+  // Verify OTP & insert user into MongoDB + auto login
+  const verifyOTP = async (email, otp, signupToken) => {
     try {
-      const res = await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
+      const res = await axios.post(`${API_URL}/auth/verify-otp`, { email, otp, signupToken });
       const { token, ...userData } = res.data;
 
       localStorage.setItem('token', token);

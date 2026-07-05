@@ -3,14 +3,16 @@ import User from '../models/User.js';
 import { sendOTPEmail } from '../services/emailService.js';
 import { logActivity } from '../middleware/logMiddleware.js';
 
-// Helper to generate JWT
+const JWT_SECRET = process.env.JWT_SECRET || 'apex_ecommerce_jwt_secret_key_2026';
+
+// Helper to generate JWT auth token
 const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET || 'apex_ecommerce_jwt_secret_key_2026', {
+  return jwt.sign({ id, role }, JWT_SECRET, {
     expiresIn: '30d',
   });
 };
 
-// @desc    Register a new user & send OTP to provided email
+// @desc    Register request: Send OTP to email without creating user in DB yet
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
@@ -25,103 +27,127 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    // Generate 6-digit OTP code
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes validity
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim();
 
     // Check if email or phone already exists in DB
-    const userExists = await User.findOne({ $or: [{ email }, { phone }] });
-
-    let user;
-
+    const userExists = await User.findOne({ $or: [{ email: cleanEmail }, { phone: cleanPhone }] });
     if (userExists) {
-      // If user exists and is ALREADY verified, reject duplicate registration
-      if (userExists.isVerified) {
-        return res.status(400).json({ message: 'Email or Phone number is already registered. Please sign in.' });
-      }
+      return res.status(400).json({ message: 'Email or Phone number is already registered. Please sign in.' });
+    }
 
-      // If user exists but is NOT verified yet, update details and send a fresh OTP
-      userExists.name = name;
-      userExists.email = email;
-      userExists.phone = phone;
-      userExists.password = password;
-      userExists.otp = otp;
-      userExists.otpExpires = otpExpires;
-      user = await userExists.save();
-    } else {
-      // Create new unverified user record
-      user = await User.create({
+    // Generate 6-digit OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Create signed temporary signup token (15 mins validity)
+    const signupToken = jwt.sign(
+      {
         name,
-        email,
-        phone,
+        email: cleanEmail,
+        phone: cleanPhone,
         password,
-        role: 'customer',
         otp,
-        otpExpires,
-        isVerified: false,
-      });
-    }
+      },
+      JWT_SECRET,
+      { expiresIn: '15m' }
+    );
 
-    if (user) {
-      console.log('==================================================');
-      console.log('🔑 REGISTRATION OTP GENERATED');
-      console.log(`User Email: ${user.email}`);
-      console.log(`6-Digit OTP Code: ${otp}`);
-      console.log('==================================================');
+    console.log('==================================================');
+    console.log('🔑 REGISTRATION OTP GENERATED (NOT YET IN DB)');
+    console.log(`User Email: ${cleanEmail}`);
+    console.log(`6-Digit OTP Code: ${otp}`);
+    console.log('==================================================');
 
-      // Send OTP via email to provided email address
-      sendOTPEmail(user.email, user.name, otp).catch((err) => {
-        console.error('Registration OTP Email Dispatch Error:', err.message);
-      });
+    // Send OTP via email to provided email address
+    sendOTPEmail(cleanEmail, name, otp).catch((err) => {
+      console.error('Registration OTP Email Dispatch Error:', err.message);
+    });
 
-      await logActivity(user._id, 'Login', { status: 'Registered, pending OTP verification' });
-
-      // Return response without on-screen OTP code
-      res.status(201).json({
-        otpRequired: true,
-        email: user.email,
-        message: `Verification OTP has been sent to ${user.email}. Please check your inbox.`,
-      });
-    } else {
-      res.status(400).json({ message: 'Invalid registration user data' });
-    }
+    // Return response with signupToken. USER IS NOT IN DB YET!
+    res.status(201).json({
+      otpRequired: true,
+      email: cleanEmail,
+      signupToken,
+      message: `Verification OTP has been sent to ${cleanEmail}. Please enter the code to complete registration.`,
+    });
   } catch (error) {
     console.error('Registration Error:', error.message);
     res.status(500).json({ message: 'Server error during registration' });
   }
 };
 
-// @desc    Verify OTP for registration, set isVerified=true, and issue login token
+// @desc    Verify OTP, CREATE user in MongoDB, and issue login token
 // @route   POST /api/auth/verify-otp
 // @access  Public
 export const verifyOTP = async (req, res) => {
-  const { email, otp } = req.body;
+  const { email, otp, signupToken } = req.body;
 
   try {
     if (!email || !otp) {
       return res.status(400).json({ message: 'Email and OTP code are required' });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User account not found' });
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. If signupToken exists (New Registration Flow)
+    if (signupToken) {
+      let decoded;
+      try {
+        decoded = jwt.verify(signupToken, JWT_SECRET);
+      } catch (err) {
+        return res.status(400).json({ message: 'OTP session expired. Please register again.' });
+      }
+
+      if (decoded.email !== cleanEmail || decoded.otp !== otp) {
+        return res.status(400).json({ message: 'Invalid OTP code. Please check your email.' });
+      }
+
+      // Check if user was registered in the meantime
+      const existingUser = await User.findOne({ $or: [{ email: cleanEmail }, { phone: decoded.phone }] });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Account already created. Please sign in.' });
+      }
+
+      // NOW CREATE THE USER IN MONGO DB (AFTER OTP VERIFICATION)
+      const newUser = await User.create({
+        name: decoded.name,
+        email: decoded.email,
+        phone: decoded.phone,
+        password: decoded.password,
+        role: 'customer',
+        isVerified: true,
+      });
+
+      await logActivity(newUser._id, 'Login', { status: 'Registered & verified OTP successfully' });
+
+      return res.status(201).json({
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        profilePhoto: newUser.profilePhoto,
+        token: generateToken(newUser._id, newUser.role),
+      });
     }
 
-    // Validate OTP code and expiration
+    // 2. Fallback for Existing DB User OTP Verification
+    const user = await User.findOne({ email: cleanEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'User account not found. Please register.' });
+    }
+
     if (!user.otp || user.otp !== otp || new Date() > user.otpExpires) {
       return res.status(400).json({ message: 'Invalid or expired OTP code' });
     }
 
-    // Mark verified and clear OTP fields
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
     await user.save();
 
-    // Audit log
     await logActivity(user._id, 'Login', { status: 'Verified OTP & logged in successfully' });
 
-    // Respond with user data and auth token for instant login
     res.status(200).json({
       _id: user._id,
       name: user.name,
@@ -157,31 +183,14 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Please enter your phone number / email and password' });
     }
 
+    const cleanIdentifier = identifier.trim();
+
     // Find user by email OR phone
     const user = await User.findOne({
-      $or: [{ email: identifier.trim() }, { phone: identifier.trim() }],
+      $or: [{ email: cleanIdentifier.toLowerCase() }, { phone: cleanIdentifier }],
     });
 
     if (user && (await user.matchPassword(password))) {
-      // If account is not verified yet, resend OTP email and prompt verification
-      if (!user.isVerified) {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        user.otp = otp;
-        user.otpExpires = new Date(Date.now() + 15 * 60 * 1000);
-        await user.save();
-
-        sendOTPEmail(user.email, user.name, otp).catch((err) => {
-          console.error('Unverified Login OTP Dispatch Error:', err.message);
-        });
-
-        return res.status(200).json({
-          otpRequired: true,
-          email: user.email,
-          message: `Your account is not verified yet. A fresh OTP code has been sent to ${user.email}.`,
-        });
-      }
-
-      // Direct login for verified returning users
       await logActivity(user._id, 'Login', { status: 'Direct login successful' });
 
       res.status(200).json({
