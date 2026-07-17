@@ -39,6 +39,50 @@ export const Home = () => {
   const promoProducts = products.filter(p => p.discountPrice > 0).slice(0, 4);
   const regularProducts = products.filter(p => !p.promoLabel && p.discountPrice === 0).slice(0, 4);
 
+  if (loading) {
+    return (
+      <div className={styles.homeContainer}>
+        {/* Banner Skeleton */}
+        <div className={styles.skeletonBanner}>
+          <div className="container">
+            <div className={styles.skeletonBannerContent}>
+              <div className={`${styles.skeleton} ${styles.skeletonBannerTitle}`}></div>
+              <div className={`${styles.skeleton} ${styles.skeletonBannerSubtitle}`}></div>
+              <div className={`${styles.skeleton} ${styles.skeletonBannerButton}`}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sections Skeleton */}
+        <div className="container" style={{ marginTop: '40px', paddingBottom: '80px' }}>
+          {[1, 2].map((sectionIndex) => (
+            <section key={sectionIndex} className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <div className={`${styles.skeleton} ${styles.skeletonHeaderTitle}`} style={{ margin: 0 }}></div>
+              </div>
+              <div className={styles.productGrid}>
+                {[1, 2, 3, 4].map((cardIndex) => (
+                  <div key={cardIndex} className={`${styles.skeletonCard} glass-panel`}>
+                    <div className={`${styles.skeleton} ${styles.skeletonCardImage}`}></div>
+                    <div className={styles.skeletonCardDetails}>
+                      <div className={`${styles.skeleton} ${styles.skeletonCardBrand}`}></div>
+                      <div className={`${styles.skeleton} ${styles.skeletonCardName}`}></div>
+                      <div className={`${styles.skeleton} ${styles.skeletonCardName2}`}></div>
+                      <div className={styles.skeletonCardFooter}>
+                        <div className={`${styles.skeleton} ${styles.skeletonCardPrice}`}></div>
+                        <div className={`${styles.skeleton} ${styles.skeletonCardButton}`}></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.homeContainer}>
       {/* Banners Carousel */}

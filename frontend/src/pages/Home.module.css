@@ -89,3 +89,126 @@
     grid-template-columns: 1fr;
   }
 }
+
+@keyframes skeletonPulse {
+  0% {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.skeleton {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.skeletonBanner {
+  width: 100%;
+  height: 480px;
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonBannerContent {
+  width: 100%;
+  max-width: 550px;
+}
+
+.skeletonBannerTitle {
+  height: 48px;
+  width: 80%;
+  margin-bottom: 20px;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonBannerSubtitle {
+  height: 24px;
+  width: 60%;
+  margin-bottom: 30px;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonBannerButton {
+  height: 44px;
+  width: 140px;
+  border-radius: var(--border-radius-md);
+}
+
+.skeletonHeaderTitle {
+  height: 28px;
+  width: 200px;
+  margin-bottom: 24px;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonCard {
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius-md);
+}
+
+.skeletonCardImage {
+  height: 220px;
+  width: 100%;
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+}
+
+.skeletonCardDetails {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+.skeletonCardBrand {
+  height: 12px;
+  width: 40%;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonCardName {
+  height: 16px;
+  width: 90%;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonCardName2 {
+  height: 16px;
+  width: 70%;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.skeletonCardPrice {
+  height: 24px;
+  width: 80px;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeletonCardButton {
+  height: 36px;
+  width: 36px;
+  border-radius: var(--border-radius-sm);
+}
+
+@media (max-width: 768px) {
+  .skeletonBanner {
+    height: 380px;
+  }
+}
+

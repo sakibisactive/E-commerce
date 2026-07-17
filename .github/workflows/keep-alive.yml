@@ -1,0 +1,16 @@
+name: Keep Alive Backend
+
+on:
+  schedule:
+    # Runs every 14 minutes to keep the Render free tier instance warm
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping:
+    name: Ping Render API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Endpoint
+        run: |
+          curl -s -I "https://e-commerce-3j7y.onrender.com/api"
