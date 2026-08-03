@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Heart, ShieldAlert, Sparkles, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { trackViewCart, trackRemoveFromCart, trackBeginCheckout } from '../utils/analytics';
 import styles from './Cart.module.css';
 
 export const Cart = () => {
@@ -83,6 +84,25 @@ export const Cart = () => {
   const activeItems = items.filter((i) => !i.isSavedForLater && i.product);
   const savedItems = items.filter((i) => i.isSavedForLater && i.product);
 
+  useEffect(() => {
+    if (activeItems.length > 0) {
+      trackViewCart(activeItems, grandTotal);
+    }
+  }, [cart]);
+
+  const handleRemoveItem = (itemId) => {
+    const item = items.find((i) => i._id === itemId);
+    if (item) {
+      trackRemoveFromCart(item.product || item, item.quantity);
+    }
+    removeFromCart(itemId);
+  };
+
+  const handleProceedToCheckout = () => {
+    trackBeginCheckout(activeItems, grandTotal);
+    navigate('/checkout');
+  };
+
   return (
     <div className={`container ${styles.cartPage}`}>
       <h1 className={styles.pageTitle}>Shopping Cart</h1>
@@ -133,7 +153,7 @@ export const Cart = () => {
                         </button>
                         <span className={styles.divider}>|</span>
                         <button
-                          onClick={() => removeFromCart(item._id)}
+                          onClick={() => handleRemoveItem(item._id)}
                           className={`${styles.actionLink} ${styles.deleteLink}`}
                         >
                           <Trash2 size={12} /> Remove
@@ -290,7 +310,7 @@ export const Cart = () => {
               </div>
 
               <button
-                onClick={() => navigate('/checkout')}
+                onClick={handleProceedToCheckout}
                 className="glow-btn"
                 style={{ width: '100%', padding: '14px', marginTop: '24px', fontSize: '15px' }}
               >

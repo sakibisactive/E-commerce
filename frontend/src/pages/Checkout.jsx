@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { trackAddShippingInfo } from '../utils/analytics';
 import { ShieldCheck, CreditCard, Loader2 } from 'lucide-react';
 import styles from './Checkout.module.css';
 
@@ -102,6 +103,7 @@ export const Checkout = () => {
 
     try {
       setLoading(true);
+      trackAddShippingInfo(activeItems, grandTotal);
       const res = await axios.post(`${API_BASE_URL}/orders`, {
         couponCode: coupon?.code || '',
         shippingAddress: shipAddrObj,

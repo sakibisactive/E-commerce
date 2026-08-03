@@ -4,7 +4,7 @@ import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
-import { trackAddToCart } from '../utils/analytics';
+import { trackAddToCart, trackSelectItem } from '../utils/analytics';
 import styles from './ProductCard.module.css';
 
 export const ProductCard = ({ product }) => {
@@ -68,7 +68,7 @@ export const ProductCard = ({ product }) => {
   return (
     <div className={`${styles.card} glass-panel glass-panel-hover`}>
       {/* Product Image Panel */}
-      <Link to={`/product/${product._id}`} className={styles.imageContainer}>
+      <Link to={`/product/${product._id}`} className={styles.imageContainer} onClick={() => trackSelectItem(product)}>
         {product.images && product.images.length > 0 ? (
           <img src={product.images[0]} alt={product.name} className={styles.productImage} />
         ) : (
@@ -94,7 +94,7 @@ export const ProductCard = ({ product }) => {
           <span>{product.category?.name || 'Category'}</span>
         </div>
 
-        <Link to={`/product/${product._id}`} className={styles.name}>
+        <Link to={`/product/${product._id}`} className={styles.name} onClick={() => trackSelectItem(product)}>
           <h3>{product.name}</h3>
         </Link>
 

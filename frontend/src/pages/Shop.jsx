@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ProductCard } from '../components/ProductCard';
+import { trackViewItemList } from '../utils/analytics';
 import { SlidersHorizontal, Search, Star, Loader2 } from 'lucide-react';
 import styles from './Shop.module.css';
 
@@ -73,6 +74,7 @@ export const Shop = () => {
       setProducts(res.data.products);
       setPages(res.data.pages);
       setTotal(res.data.total);
+      trackViewItemList(res.data.products, 'Product Catalog');
     } catch (e) {
       console.error(e);
     } finally {
