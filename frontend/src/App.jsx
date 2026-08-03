@@ -1,8 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { initGA, trackPageView } from './utils/analytics';
 
 // Components
 import { Navbar } from './components/Navbar';
@@ -47,6 +48,12 @@ const AdminRoute = ({ children }) => {
 };
 
 function AppContent() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
@@ -83,6 +90,10 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => {
+    initGA();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
@@ -95,3 +106,4 @@ export default function App() {
     </Router>
   );
 }
+

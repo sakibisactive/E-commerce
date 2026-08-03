@@ -4,6 +4,7 @@ import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import { trackAddToCart } from '../utils/analytics';
 import styles from './ProductCard.module.css';
 
 export const ProductCard = ({ product }) => {
@@ -46,6 +47,7 @@ export const ProductCard = ({ product }) => {
         return;
       }
       await addToCart(product._id, 1);
+      trackAddToCart(product, 1);
     } catch (err) {
       console.error(err);
     }

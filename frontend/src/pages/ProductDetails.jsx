@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
+import { trackViewItem, trackAddToCart } from '../utils/analytics';
 import styles from './ProductDetails.module.css';
 
 export const ProductDetails = () => {
@@ -44,6 +45,7 @@ export const ProductDetails = () => {
       setProduct(prodRes.data.product);
       setRelatedProducts(prodRes.data.relatedProducts);
       setReviews(reviewsRes.data);
+      trackViewItem(prodRes.data.product);
       
       if (prodRes.data.product.images?.length > 0) {
         setActiveImage(prodRes.data.product.images[0]);
@@ -62,6 +64,7 @@ export const ProductDetails = () => {
     }
     try {
       await addToCart(product._id, 1);
+      trackAddToCart(product, 1);
     } catch (err) {
       alert(err);
     }

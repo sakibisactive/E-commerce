@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BadgeCheck, AlertOctagon, Undo2, ArrowLeft, Download, Eye } from 'lucide-react';
+import { trackPurchase } from '../utils/analytics';
 
 export const CheckoutSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -21,6 +22,7 @@ export const CheckoutSuccess = () => {
       setLoading(true);
       const res = await axios.get(`${API_BASE_URL}/orders/${orderId}`);
       setOrder(res.data);
+      trackPurchase(res.data);
     } catch (e) {
       console.error(e);
     } finally {

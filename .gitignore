@@ -33,3 +33,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Exclude MERN folder
+MERN/
+
