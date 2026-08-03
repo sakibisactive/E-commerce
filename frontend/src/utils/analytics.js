@@ -13,7 +13,7 @@ export const initGA = () => {
   try {
     const isDev = import.meta.env.DEV;
     ReactGA.initialize(GA_MEASUREMENT_ID, {
-      gaOptions: {
+      gtagOptions: {
         debug_mode: isDev,
       },
     });
@@ -22,6 +22,9 @@ export const initGA = () => {
     console.error('Failed to initialize ReactGA:', err);
   }
 };
+
+// Auto-initialize GA4 at module load to prevent React useEffect race conditions
+initGA();
 
 /**
  * Track SPA Page View
