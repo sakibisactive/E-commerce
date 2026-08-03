@@ -37,3 +37,6 @@ yarn-error.log*
 # Exclude MERN folder
 MERN/
 
+# Local instruction docs
+instructions.txt
+
