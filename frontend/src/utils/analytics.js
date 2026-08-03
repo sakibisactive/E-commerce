@@ -15,6 +15,7 @@ export const initGA = () => {
     ReactGA.initialize(GA_MEASUREMENT_ID, {
       gtagOptions: {
         debug_mode: isDev,
+        send_page_view: true,
       },
     });
     console.log(`GA4 initialized with ID: ${GA_MEASUREMENT_ID} (debug_mode: ${isDev})`);
@@ -31,7 +32,12 @@ initGA();
  */
 export const trackPageView = (path) => {
   try {
-    ReactGA.send({ hitType: 'pageview', page: path });
+    ReactGA.send({ hitType: 'pageview', page: path, page_path: path });
+    ReactGA.event('page_view', {
+      page_path: path,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
   } catch (err) {
     console.error('Error tracking pageview:', err);
   }
